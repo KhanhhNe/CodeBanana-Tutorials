@@ -2,10 +2,11 @@
 // @namespace    https://github.com/KhanhhNe
 // @name         Auto buy forest-berries
 // @description  Auto trade chợ đen forest-berries
+// @icon         https://www.google.com/s2/favicons?domain=forest-berries.biz
 // @copyright    2021, KhanhhNe (https://github.com/KhanhhNe)
-// @license      MIT
 // @version      1.2.0
 // @include      https://forest-berries.biz/account/market
+// @updateURL    https://github.com/KhanhhNe/CodeBanana-Tutorials/blob/main/forest-berries-market/forest-berries.user.js
 // @grant        none
 // ==/UserScript==
 
