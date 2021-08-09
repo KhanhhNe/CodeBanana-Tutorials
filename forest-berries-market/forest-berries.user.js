@@ -3,7 +3,7 @@
 // @name         Auto buy forest-berries
 // @description  Auto trade chợ đen forest-berries
 // @copyright    2021, KhanhhNe (https://github.com/KhanhhNe)
-// @license      GPL-3.0+; http://www.gnu.org/licenses/gpl-3.0.txt
+// @license      MIT
 // @version      1.2.0
 // @include      https://forest-berries.biz/account/market
 // @grant        none
