@@ -7,7 +7,7 @@
 // @license      CC-BY-SA-3.0; http://creativecommons.org/licenses/by-sa/3.0/
 // @license      MIT
 // @version      1.0.0
-// @include      https://seosprint.net/earn-task/*
+// @include      https://seosprint.net/earn*
 // @grant        none
 // ==/UserScript==
 
