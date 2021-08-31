@@ -42,7 +42,7 @@ const getEmployerClass = employerId => `employer-${employerId}-tasks`
 /**
 /**
  * Lấy thông tin employer từ seosprint (/member, /employer-tasks)
- * @param {String} employerId 
+ * @param {String} employerId
  * @returns Dữ liệu employer
  */
 async function getEmployerInfo(employerId) {
@@ -75,7 +75,7 @@ async function getEmployerInfo(employerId) {
 /**
  * Trả về dữ liệu có sẵn trong cache nếu có hoặc dữ liệu vừa crawl và chạy task
  * crawl dữ liệu mới trong background
- * @param {String} employerId 
+ * @param {String} employerId
  * @returns Dữ liệu employer
  */
 async function getEmployerCached(employerId) {
@@ -101,23 +101,25 @@ async function getEmployerCached(employerId) {
 /**
  * Crawl và hiển thị thông tin employer
  * @param {Element} adv Advertisement element
- * @param {String} employerId 
+ * @param {String} employerId
  * @param {Boolean} crawl Chạy task crawl dữ liệu hay không (mặc định: false)
  */
 function addEmployerInfo(adv, employerId, crawl = false) {
     // Thêm element hiển thị thông tin tasks của employer
     const template = document.createElement('template')
-    template.innerHTML = `<span style="white-space: nowrap" translate="no">
-        <b class="active-tasks" title="Active tasks" style="color: green; font-size: 1.25rem"></b>
-        <span>/</span>
-        <b class="total-tasks" title="Total tasks" style=""></b>
-    </span>`
+    template.innerHTML =
+        `<span style="white-space: nowrap" translate="no">
+            <b class="active-tasks" title="Active tasks" style="color: green; font-size: 1.25rem"></b>
+            <span>/</span>
+            <b class="total-tasks" title="Total tasks" style=""></b>
+        </span>`
     adv.querySelector('.adv-line-cell-1').append(template.content.firstChild)
 
     // Thêm element hiển thị thông tin member của employer
-    template.innerHTML = `<span style="margin-right: 14px" translate="no">
-        <span class="member-info"></span>
-    </span>`
+    template.innerHTML =
+        `<span style="margin-right: 14px" translate="no">
+            <span class="member-info"></span>
+        </span>`
     adv.querySelector('.advmoder > div > span:first-child').prepend(template.content.firstChild)
 
     if (crawl) {
@@ -133,6 +135,30 @@ function addEmployerInfo(adv, employerId, crawl = false) {
 }
 
 
+/**
+ * Chèn nút block employer vào mỗi ô job
+ * @param {Element} adv 
+ * @param {String} employerId 
+ */
+function addEmployerBlockBtn(adv, employerId) {
+    const favourite = adv.querySelector('[id*=task_fav]')
+
+    const template = document.createElement('template')
+    const onclick = `linkSubmit('work_mode=fast&job=18&win=3&iduser=${employerId}', true);`
+    template.innerHTML =
+        `<div onclick="${onclick}" style="${favourite.getAttribute('style')}" title="Block" translate="no">
+            <i class="fas fa-skull" style="color: rgb(189, 195, 199);"></i>
+        </div>`
+    const block = template.content.firstChild
+
+    favourite.outerHTML =
+        `<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            ${favourite.outerHTML}
+            ${block.outerHTML}
+        </div>`
+}
+
+
 (function main() {
     'use strict';
     const init = {} // Lưu thông tin employer đã khởi tạo (chạy task crawl) hay chưa
@@ -144,6 +170,7 @@ function addEmployerInfo(adv, employerId, crawl = false) {
         adv.classList.add(employerClass)
 
         addEmployerInfo(adv, employerId, !init[employerId])
+        addEmployerBlockBtn(adv, employerId)
         init[employerId] = true
     }
 })();
