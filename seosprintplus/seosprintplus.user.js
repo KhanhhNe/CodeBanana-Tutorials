@@ -29,13 +29,21 @@ try {
 }
 
 // Update liên tục dữ liệu data lên localStorage
-const int = setInterval(() => localStorage.setItem('employersData', JSON.stringify(data)), 1000)
+const int = setInterval(
+    () => localStorage.setItem('employersData', JSON.stringify(data)), 1000
+)
 // Ngưng update dữ liệu sau 20s vì không còn dữ liệu mới nữa (đã crawl đầy đủ)
 setTimeout(() => clearInterval(int), 20000)
 
 
-/*
+const getEmployerClass = employerId => `employer-${employerId}-tasks`
+
+
+/**
+/**
  * Lấy thông tin employer từ seosprint (/member, /employer-tasks)
+ * @param {String} employerId 
+ * @returns Dữ liệu employer
  */
 async function getEmployerInfo(employerId) {
     // Lấy tổng số tasks, thông tin member của employer
@@ -59,12 +67,16 @@ async function getEmployerInfo(employerId) {
         })
     })
     // Dùng Promise.all để chạy cả 2 task cùng lúc
-    return (await Promise.all([getActiveTasksCount, getMemberInfo])).reduce((a, b) => Object.assign(a, b), {})
+    return (await Promise.all([getActiveTasksCount, getMemberInfo]))
+        .reduce((a, b) => Object.assign(a, b), {})
 }
 
 
-/*
- * Wrapper để cache dữ liệu employer và quản lí việc gọi hàm getEmployerInfo tối ưu thời gian nhất
+/**
+ * Trả về dữ liệu có sẵn trong cache nếu có hoặc dữ liệu vừa crawl và chạy task
+ * crawl dữ liệu mới trong background
+ * @param {String} employerId 
+ * @returns Dữ liệu employer
  */
 async function getEmployerCached(employerId) {
     if (!data[employerId]) {
@@ -74,10 +86,8 @@ async function getEmployerCached(employerId) {
         }
         console.log(`Got ${employerId}`)
     } else {
-        // Trả về dữ liệu đã lưu trước đó trong data
-        console.log(`Cached ${employerId}`)
+        // Chạy task update employerData trong background
         getEmployerInfo(employerId).then(employerData => {
-            // Chạy task update employerData trong background
             data[employerId] = {
                 ...employerData
             }
@@ -88,45 +98,52 @@ async function getEmployerCached(employerId) {
 }
 
 
-(function() {
+/**
+ * Crawl và hiển thị thông tin employer
+ * @param {Element} adv Advertisement element
+ * @param {String} employerId 
+ * @param {Boolean} crawl Chạy task crawl dữ liệu hay không (mặc định: false)
+ */
+function addEmployerInfo(adv, employerId, crawl = false) {
+    // Thêm element hiển thị thông tin tasks của employer
+    const template = document.createElement('template')
+    template.innerHTML = `<span style="white-space: nowrap" translate="no">
+        <b class="active-tasks" title="Active tasks" style="color: green; font-size: 1.25rem"></b>
+        <span>/</span>
+        <b class="total-tasks" title="Total tasks" style=""></b>
+    </span>`
+    adv.querySelector('.adv-line-cell-1').append(template.content.firstChild)
+
+    // Thêm element hiển thị thông tin member của employer
+    template.innerHTML = `<span style="margin-right: 14px" translate="no">
+        <span class="member-info"></span>
+    </span>`
+    adv.querySelector('.advmoder > div > span:first-child').prepend(template.content.firstChild)
+
+    if (crawl) {
+        // Crawl thông tin và cập nhật vào web
+        getEmployerCached(employerId).then(employerData => { // jshint ignore:line
+            document.querySelectorAll(`.${getEmployerClass(employerId)}`).forEach(adv => {
+                adv.querySelector('.active-tasks').innerHTML = employerData.active_tasks
+                adv.querySelector('.total-tasks').innerHTML = employerData.total_tasks
+                adv.querySelector('.member-info').innerHTML = `${employerData.name} ${employerData.id}`
+            })
+        })
+    }
+}
+
+
+(function main() {
     'use strict';
-    const init = {}
+    const init = {} // Lưu thông tin employer đã khởi tạo (chạy task crawl) hay chưa
 
     for (const adv of document.querySelectorAll('.adv-line')) {
         // Lấy ID employer
         const employerId = adv.querySelector('a.ref-block-av').href.match(/\d+/g)[0]
-        const employerClass = `employer-${employerId}-tasks`
+        const employerClass = getEmployerClass(employerId)
+        adv.classList.add(employerClass)
 
-        // Thêm element hiển thị thông tin tasks của employer
-        const template = document.createElement('template')
-        template.innerHTML = `<span style="white-space: nowrap" translate="no" class="${employerClass}">
-            <b class="active-tasks" title="Active tasks" style="color: green; font-size: 1.25rem"></b>
-            <span>/</span>
-            <b class="total-tasks" title="Total tasks" style=""></b>
-        </span>`
-        adv.querySelector('.adv-line-cell-1').append(template.content.firstChild)
-
-        // Thêm element hiển thị thông tin member của employer
-        template.innerHTML = `<span style="margin-right: 14px" translate="no" class="${employerClass}">
-            <span class="member-info"></span>
-        </span>`
-        adv.querySelector('.advmoder > div > span:first-child').prepend(template.content.firstChild)
-
-        if (!init[employerId]) {
-            // Chỉ chạy task getEmployerCached nếu employerId chưa khởi tạo (chỉ chạy 1 lần duy nhất)
-            getEmployerCached(employerId).then(employerData => {
-                // Update thông tin trong web bằng dữ liệu lấy được
-                for (const elem of document.querySelectorAll(`.${employerClass} .active-tasks`)) {
-                    elem.innerHTML = employerData.active_tasks
-                }
-                for (const elem of document.querySelectorAll(`.${employerClass} .total-tasks`)) {
-                    elem.innerHTML = employerData.total_tasks
-                }
-                for (const elem of document.querySelectorAll(`.${employerClass} .member-info`)) {
-                    elem.innerHTML = `${employerData.name} ${employerData.id}`
-                }
-            })
-            init[employerId] = true
-        }
+        addEmployerInfo(adv, employerId, !init[employerId])
+        init[employerId] = true
     }
 })();
