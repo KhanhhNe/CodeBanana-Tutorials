@@ -108,7 +108,7 @@ function addEmployerInfo(adv, employerId, crawl = false) {
     // Thêm element hiển thị thông tin tasks của employer
     const template = document.createElement('template')
     template.innerHTML =
-        `<span style="white-space: nowrap" translate="no">
+        `<div style="white-space: nowrap; width: 4rem;" translate="no">
             <b class="active-tasks" title="Active tasks" style="color: green; font-size: 1.25rem"></b>
             <span>/</span>
             <b class="total-tasks" title="Total tasks" style=""></b>
@@ -159,8 +159,18 @@ function addEmployerBlockBtn(adv, employerId) {
 }
 
 
+/**
+ * Xoá thanh Blog ở bên phải, nhường chỗ cho list job
+ */
+function removeBlogBar() {
+    document.getElementById('block-sideright').remove()
+}
+
+
 (function main() {
     'use strict';
+    removeBlogBar();
+
     const init = {} // Lưu thông tin employer đã khởi tạo (chạy task crawl) hay chưa
 
     for (const adv of document.querySelectorAll('.adv-line')) {
